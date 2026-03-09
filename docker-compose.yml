@@ -1,6 +1,6 @@
 services:
   asc:
-    image: localhost/dev.asc:dev
+    image: ghcr.io/victormartin-fr/alertmanager-servicenow-connector:latest
     container_name: asc
     ports:
       - '8000:8000'
