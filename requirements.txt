@@ -1,0 +1,5 @@
+fastapi[standard]>=0.135.0
+pymongo>=4.16.0
+httpx>=0.28.1
+pydantic-settings>=2.13.0
+PyYAML>=6.0.3

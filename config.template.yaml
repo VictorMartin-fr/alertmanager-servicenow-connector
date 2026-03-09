@@ -1,0 +1,19 @@
+#ServiceNow configuration
+service_now:
+  instance_id:
+  username:
+  password:
+  caller_id:
+  state:
+    in_progress:
+    on_hold:
+    hold_reason:
+
+#MongoDB configuration
+mongodb:
+  hostname:
+  port:
+  username:
+  password:
+  database:
+  collection:
