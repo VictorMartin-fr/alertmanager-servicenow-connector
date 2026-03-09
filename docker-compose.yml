@@ -1,0 +1,32 @@
+services:
+  asc:
+    image: localhost/dev.asc:dev
+    container_name: asc
+    ports:
+      - '8000:8000'
+    restart: unless-stopped
+    environment:
+      - ASC_SERVICE_NOW__PASSWORD=${SERVICENOW_PASSWORD}
+      - ASC_MONGODB__USERNAME=${MONGODB_USERNAME}
+      - ASC_MONGODB__PASSWORD=${MONGODB_PASSWORD}
+      - ASC_MONGODB__HOSTNAME=mongodb
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      - MONGO_INITDB_DATABASE=alertmanager_servicenow_connector
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
