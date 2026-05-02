@@ -1,6 +1,12 @@
 from fastapi import FastAPI
 from src.api import webhook
 from src.core.database import connect_to_mongo,close_mongo_connection
+import logging
+
+#Logging configuration
+
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger('main')
 
 async def lifespan(app: FastAPI):
     print("ASC API starting...")

@@ -3,6 +3,8 @@ from typing import Optional
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict, PydanticBaseSettingsSource, YamlConfigSettingsSource
 
+import logging
+
 class ServiceNowStateConfig(BaseModel):
     in_progress: Optional[int]
     on_hold: Optional[int]
@@ -48,5 +50,3 @@ class Settings(BaseSettings):
         )
 
 settings = Settings()
-
-print(settings)

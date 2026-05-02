@@ -2,6 +2,9 @@ from src.repositories.databases_function import AlertDatabase
 from src.clients.servicenow_client import ServiceNowClient
 from src.schemas.alertmanager import AlertManager
 from src.core.config import settings
+import logging
+
+logger = logging.getLogger("alerts_orchestrator")
 
 snow_client = ServiceNowClient(
     instance_id=settings.service_now.instance_id,
@@ -18,30 +21,65 @@ async def process_incoming_alerts_from_alertmanager(payload: AlertManager):
     support_team = payload.receiver
 
     for alert in payload.alerts:
-        print(f"Next alert: {alert.labels['alertname']}. Status: {alert.status}")
+        logger.info(f"alert received: {alert.labels['alertname']}, state: {alert.status}")
 
         #Alert status : FIRING
         if alert.status == "firing":
-            existing_alert = await alert_repo.get_alert_by_fingerprint(alert.fingerprint)
+            existing_alert = {}
+            try:
+                existing_alert = await alert_repo.get_alert_by_fingerprint(alert.fingerprint)
+                logger.debug(f"Alert is found in database: {existing_alert}")
+            except Exception as e:
+                logger.exception(f"Failed to get alert in database. Error: {e}")
 
             if existing_alert:
-                #If firing alert is resolved on database side
                 if existing_alert["alertStatus"] == "resolved":
-                    await snow_client.set_incident_in_progress(alert,existing_alert["snowSysId"])
-                    await alert_repo.update_alert(alert)
+                    logger.info("Alert is in resolved state in database. Update status")
+                    try:
+                        await snow_client.set_incident_in_progress(alert,existing_alert["snowSysId"])
+                        logger.debug("ServiceNow incident updated")
+                    except Exception as e:
+                        logger.exception(f"Failed to update ServiceNow incident. Error: {e}")
+                    try:
+                        await alert_repo.update_alert(alert)
+                        logger.debug("Alert updated in database")
+                    except Exception as e:
+                        logger.exception(f"Failed to update Alert in database. Error: {e}")
             else:
-                new_incident = await snow_client.create_incident(alert,support_team,settings.service_now.caller_id)
-                await alert_repo.create_new_alert(alert, new_incident["servicenow_ticket_number"], new_incident["servicenow_sys_id"])
-                print("Alert created in database, pass the next alert")
+                logger.debug("No alert found in database")
+                new_incident = {}
+                try:
+                    new_incident = await snow_client.create_incident(alert,support_team,settings.service_now.caller_id)
+                    logger.info(f"Incident created in ServiceNow. Reference: {new_incident["servicenow_ticket_number"]}")
+                except Exception as e:
+                    logger.exception(f"Failed to create incident in ServiceNow. Error: {e}")
+                try:
+                    await alert_repo.create_new_alert(alert, new_incident["servicenow_ticket_number"], new_incident["servicenow_sys_id"])
+                    logger.debug("Alert created in database")
+                except Exception as e:
+                    logger.exception(f"Failed to create alert in database. Error: {e}")
 
         # Alert status : RESOLVED
         elif alert.status == "resolved":
-            existing_alert = await alert_repo.get_alert_by_fingerprint(alert.fingerprint)
+            existing_alert = {}
+            try:
+                existing_alert = await alert_repo.get_alert_by_fingerprint(alert.fingerprint)
+                logger.debug(f"Alert is found in database: {existing_alert}")
+            except Exception as e:
+                logger.exception(f"Failed to get alert in database. Error: {e}")
 
             if existing_alert:
-                #Check if the status of the incoming resolved alert is firing state
                 if existing_alert["alertStatus"] == "firing":
-                    await snow_client.set_incident_on_hold(alert,existing_alert["snowSysId"])
-                    await alert_repo.update_alert(alert)
+                    logger.info("Alert is in firing state in database. Update status")
+                    try:
+                        await snow_client.set_incident_on_hold(alert,existing_alert["snowSysId"])
+                        logger.debug("ServiceNow incident updated")
+                    except Exception as e:
+                        logger.exception(f"Failed to update ServiceNow incident. Error: {e}")
+                    try:
+                        await alert_repo.update_alert(alert)
+                        logger.debug("Alert updated in database")
+                    except Exception as e:
+                        logger.exception(f"Failed to update Alert in database. Error: {e}")
                 else:
-                    print("Alert state : resolved. Known state in database : resolved")
+                    logger.debug("Alert is already in resolved state in database. Nothing to do")
