@@ -1,4 +1,4 @@
-from src.schemas.alertmanager import Alert
+from src.schemas.core import CoreAlert
 import httpx
 
 class ServiceNowClient:
@@ -9,21 +9,21 @@ class ServiceNowClient:
         self.on_hold_reason = on_hold_reason
         self.in_progress_id = in_progress_id
 
-    async def create_incident(self, alert: Alert, support_team: str, caller_id: str):
+    async def create_incident(self, core_alert: CoreAlert, caller_id: str):
         """
         POST INCIDENT ON SERVICENOW
         """
 
         comment_builder = ""
 
-        for label in alert.labels:
-            comment_builder += f"{label}: {alert.labels[label]} <br>"
+        for label in core_alert.tags:
+            comment_builder += f"{label}: {core_alert.tags[label]} <br>"
 
         data = {
             "caller_id": caller_id,
-            "assignment_group": support_team,
-            "short_description": alert.labels['alertname'],
-            "description": alert.annotations['description'],
+            "assignment_group": core_alert.support_team,
+            "short_description": f"🚨 {core_alert.name}",
+            "description": f"📦 Source: {core_alert.source} \n\nDescription: {core_alert.description}",
             "work_notes": f"[code] <b> Alert information: </b> <br> <pre><code> {comment_builder} </code></pre>[/code]"
         }
 
@@ -46,7 +46,7 @@ class ServiceNowClient:
                 "message": "Alert created inside ServiceNow"
             }
 
-    async def set_incident_on_hold(self, alert: Alert, sys_id):
+    async def set_incident_on_hold(self, core_alert: CoreAlert, sys_id):
         """
         SET INCIDENT ON HOLD ON SERVICENOW
         """
@@ -54,7 +54,7 @@ class ServiceNowClient:
         data = {
             "state": self.on_hold_id,
             "hold_reason": self.on_hold_reason,
-            "work_notes": f"/// ALERT RESOLVED /// end date : {alert.endsAt}. Incident on hold for monitoring."
+            "work_notes": f"/// ALERT RESOLVED /// end date : {core_alert.endedAt}. Incident on hold for monitoring."
         }
 
         async with httpx.AsyncClient() as client:
@@ -73,14 +73,14 @@ class ServiceNowClient:
                 "message": "Incident set on hold"
             }
 
-    async def set_incident_in_progress(self, alert: Alert, sys_id):
+    async def set_incident_in_progress(self, core_alert: CoreAlert, sys_id):
         """
         SET INCIDENT IN PROGRESS
         """
 
         data = {
             "state": self.in_progress_id,
-            "work_notes": f"/// ALERT FIRING /// was previously resolved. new alert at : {alert.startsAt}"
+            "work_notes": f"/// ALERT FIRING /// was previously resolved. new alert at : {core_alert.startedAt}"
         }
 
         async with httpx.AsyncClient() as client:

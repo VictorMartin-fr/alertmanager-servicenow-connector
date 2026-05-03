@@ -17,3 +17,11 @@ mongodb:
   password:
   database:
   collection:
+
+#Zulip configuration
+zulip:
+  activate:
+  instance_url:
+  email:
+  api_key:
+  channel:
