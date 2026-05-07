@@ -13,6 +13,14 @@ ASC (for AlertManager ServiceNow Connector) is a tool to interconnect AlertManag
 - Incident lifecycle (InProgress, On-Hold, Resolved)
 - Alerts flapping detection
 
+## Supported technology
+
+| Type           | Technology                                                                                               |
+|----------------|----------------------------------------------------------------------------------------------------------|
+| Alert sources  | [AlertManager](./docs/alerts/setup-alertmanager.md) • [HealthCheck.io](docs/alerts/setup-healthcheck.md) |
+| Ticketing tool | [ServiceNow](./docs/tickets/setup-servicenow.md)                                                         |
+| Communication  | [Zulip](./docs/communication/setup-zulip.md)                                                             |
+
 ## Configuration
 
 ### Prerequisites

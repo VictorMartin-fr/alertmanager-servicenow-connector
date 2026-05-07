@@ -1,5 +1,5 @@
 from src.schemas.core import CoreAlert
-from src.schemas.healthcheck import HealthCheck
+from src.schemas.healthcheck import HealthCheck, HealthcheckPayload
 from src.services.notification_manager import notify
 from src.repositories.databases_function import AlertDatabase
 from src.clients.servicenow_client import ServiceNowClient
@@ -49,6 +49,7 @@ async def process_incoming_alerts_from_alertmanager(payload: AlertManager):
                 logger.debug(f"Alert is found in database: {existing_alert}")
             except Exception as e:
                 logger.exception(f"Failed to get alert in database. Error: {e}")
+                continue
 
             if existing_alert:
                 if existing_alert["alertStatus"] == "resolved":
@@ -58,11 +59,13 @@ async def process_incoming_alerts_from_alertmanager(payload: AlertManager):
                         logger.debug("ServiceNow incident updated")
                     except Exception as e:
                         logger.exception(f"Failed to update ServiceNow incident. Error: {e}")
+                        continue
                     try:
                         await alert_repo.update_alert(core_alert)
                         logger.debug("Alert updated in database")
                     except Exception as e:
                         logger.exception(f"Failed to update Alert in database. Error: {e}")
+                        continue
                     try:
                         await notify.notify_all(core_alert, is_flapping=True)
                         logger.debug("Notification sent in all application enabled")
@@ -76,11 +79,13 @@ async def process_incoming_alerts_from_alertmanager(payload: AlertManager):
                     logger.info(f"Incident created in ServiceNow. Reference: {new_incident["servicenow_ticket_number"]}")
                 except Exception as e:
                     logger.exception(f"Failed to create incident in ServiceNow. Error: {e}")
+                    continue
                 try:
                     await alert_repo.create_new_alert(core_alert, new_incident["servicenow_ticket_number"], new_incident["servicenow_sys_id"])
                     logger.debug("Alert created in database")
                 except Exception as e:
                     logger.exception(f"Failed to create alert in database. Error: {e}")
+                    continue
                 try:
                     await notify.notify_all(core_alert, is_flapping=False)
                     logger.debug("Notification sent in all application enabled")
@@ -121,20 +126,20 @@ async def process_incoming_alerts_from_alertmanager(payload: AlertManager):
 Healthcheck ping orchestrator
 """
 
-async def process_incoming_ping_from_healthcheck(payload: HealthCheck, tenant_name: str):
+async def process_incoming_ping_from_healthcheck(payload: HealthcheckPayload, tenant_name: str):
     core_alert = CoreAlert(
-        fingerprint=payload.fingerprint,
-        name=f"Healthcheck / Check: {payload.name} / Tenant: {tenant_name}",
-        status="firing" if payload.status == "down" else "resolved",
-        startedAt=payload.date if payload.status == "down" else None,
-        endedAt=payload.date if payload.status == "up" else None,
-        tags=payload.tags,
-        description="",
+        fingerprint=payload.alert.uuid,
+        name=f"Healthcheck / Check: {payload.alert.name} / Tenant: {tenant_name}",
+        status="firing" if payload.alert.status == "down" else "resolved",
+        startedAt=payload.alert.last_ping if payload.alert.status == "down" else None,
+        endedAt=payload.alert.last_ping if payload.alert.status == "up" else None,
+        tags=payload.alert.tags,
+        description=payload.alert.desc,
         source="healthcheck",
-        support_team=payload.support_team
+        support_team=payload.alert.tags["support_team"]
     )
 
-    logger.info(f"Ping received from Healthcheck. Tenant: {tenant_name}, check: {payload.name}, status: {payload.status}")
+    logger.info(f"Ping received from Healthcheck. Tenant: {tenant_name}, check: {payload.alert.name}, status: {payload.alert.status}")
 
     if core_alert.status == "firing":
         existing_alert = {}
@@ -143,6 +148,7 @@ async def process_incoming_ping_from_healthcheck(payload: HealthCheck, tenant_na
             logger.debug(f"Alert is found in database: {existing_alert}")
         except Exception as e:
             logger.exception(f"Failed to get alert in database. Error: {e}")
+            return
 
         if existing_alert:
             if existing_alert["alertStatus"] == "resolved":
@@ -152,11 +158,13 @@ async def process_incoming_ping_from_healthcheck(payload: HealthCheck, tenant_na
                     logger.debug("ServiceNow incident updated")
                 except Exception as e:
                     logger.exception(f"Failed to update ServiceNow incident. Error: {e}")
+                    return
                 try:
                     await alert_repo.update_alert(core_alert)
                     logger.debug("Alert updated in database")
                 except Exception as e:
                     logger.exception(f"Failed to update Alert in database. Error: {e}")
+                    return
                 try:
                     await notify.notify_all(core_alert, is_flapping=True)
                     logger.debug("Notification sent in all application enabled")
@@ -170,11 +178,13 @@ async def process_incoming_ping_from_healthcheck(payload: HealthCheck, tenant_na
                 logger.info(f"Incident created in ServiceNow. Reference: {new_incident["servicenow_ticket_number"]}")
             except Exception as e:
                 logger.exception(f"Failed to create incident in ServiceNow. Error: {e}")
+                return
             try:
                 await alert_repo.create_new_alert(core_alert, new_incident["servicenow_ticket_number"], new_incident["servicenow_sys_id"])
                 logger.debug("Alert created in database")
             except Exception as e:
                 logger.exception(f"Failed to create alert in database. Error: {e}")
+                return
             try:
                 await notify.notify_all(core_alert, is_flapping=False)
                 logger.debug("Notification sent in all application enabled")
@@ -189,6 +199,7 @@ async def process_incoming_ping_from_healthcheck(payload: HealthCheck, tenant_na
             logger.debug(f"Alert is found in database: {existing_alert}")
         except Exception as e:
             logger.exception(f"Failed to get alert in database. Error: {e}")
+            return
 
         if existing_alert:
             if existing_alert["alertStatus"] == "firing":
@@ -198,16 +209,19 @@ async def process_incoming_ping_from_healthcheck(payload: HealthCheck, tenant_na
                     logger.debug("ServiceNow incident updated")
                 except Exception as e:
                     logger.exception(f"Failed to update ServiceNow incident. Error: {e}")
+                    return
                 try:
                     await alert_repo.update_alert(core_alert)
                     logger.debug("Alert updated in database")
                 except Exception as e:
                     logger.exception(f"Failed to update Alert in database. Error: {e}")
+                    return
                 try:
                     await notify.notify_all(core_alert, is_flapping=False)
                     logger.debug("Notification sent in all application enabled")
                 except Exception as e:
                     logger.exception(f"Failed to notify an application. Error: {e}")
+                    return
             else:
                 logger.debug("Alert is already in resolved state in database. Nothing to do")
 

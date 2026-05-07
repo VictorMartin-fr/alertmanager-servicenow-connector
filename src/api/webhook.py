@@ -1,6 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks
 
-from src.schemas.healthcheck import HealthCheck
+from src.schemas.healthcheck import HealthCheck, HealthcheckPayload
 from src.schemas.alertmanager import AlertManager
 from src.services.alerts_orchestrator import process_incoming_alerts_from_alertmanager, process_incoming_ping_from_healthcheck
 
@@ -17,7 +17,7 @@ def receive_alerts(payload: AlertManager, background_tasks: BackgroundTasks):
     }
 
 @router.post("/healthcheck/ping/{tenant_name}", status_code=202)
-def receive_ping(tenant_name: str, payload: HealthCheck, background_tasks: BackgroundTasks):
+def receive_ping(tenant_name: str, payload: HealthcheckPayload, background_tasks: BackgroundTasks):
 
     background_tasks.add_task(process_incoming_ping_from_healthcheck,payload,tenant_name)
     return {
