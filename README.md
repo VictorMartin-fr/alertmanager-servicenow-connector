@@ -19,7 +19,7 @@ ASC (for AlertManager ServiceNow Connector) is a tool to interconnect AlertManag
 |----------------|----------------------------------------------------------------------------------------------------------|
 | Alert sources  | [AlertManager](./docs/alerts/setup-alertmanager.md) • [HealthCheck.io](docs/alerts/setup-healthcheck.md) |
 | Ticketing tool | [ServiceNow](./docs/tickets/setup-servicenow.md)                                                         |
-| Communication  | [Zulip](./docs/communication/setup-zulip.md)                                                             |
+| Communication  | [Slack](./docs/communication/setup-slack.md) • [Zulip](./docs/communication/setup-zulip.md)              |
 
 ## Configuration
 

@@ -14,14 +14,14 @@ class AlertDatabase:
         """
         return await self.collection.find_one({"fingerprint": fingerprint})
 
-    async def create_new_alert(self, core_alert: CoreAlert, servicenow_ticket_number: str, servicenow_sys_id: str):
+    async def create_new_alert(self, core_alert: CoreAlert, ticket_id: str, internal_id: str):
         """
         Create new alert inside MongoDB
         """
         document = {
             "alertName": core_alert.name,
-            "incidentNumber": servicenow_ticket_number,
-            "snowSysId": servicenow_sys_id,
+            "ticket_id": ticket_id,
+            "internal_id": internal_id,
             "alertStatus": core_alert.status,
             "alertStartDate": core_alert.startedAt,
             "alertEndDate": core_alert.endedAt,

@@ -11,6 +11,8 @@ class ServiceNowStateConfig(BaseModel):
     hold_reason: Optional[int]
 
 class ServiceNowConfig(BaseModel):
+    enabled: Optional[bool] = Field(default=False)
+    module: Optional[str] = Field(default="incident")
     instance_id: Optional[str]
     username: Optional[str]
     password: Optional[str]
@@ -32,10 +34,15 @@ class NotifierZulipConfig(BaseModel):
     api_key: Optional[str]
     channel: Optional[str]
 
+class NotifierSlackConfig(BaseModel):
+    enabled: Optional[bool] = Field(default=False)
+    webhook_url: Optional[str]
+
 class Settings(BaseSettings):
     service_now: ServiceNowConfig
     mongodb: MongoDbConfig
     zulip: NotifierZulipConfig
+    slack: NotifierSlackConfig
 
     model_config = SettingsConfigDict(
         env_prefix="ASC_",

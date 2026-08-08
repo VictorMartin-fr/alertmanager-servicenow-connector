@@ -25,3 +25,18 @@ To select where the Healthcheck alert need to be sent on ServiceNow, you need to
 ```text
 support_team:[MY ASSIGNMENT GROUP]
 ```
+
+## Field mapping
+
+When Healthcheck pings are received, they will be mapped like this :
+
+| ASC Field    | Healthcheck Field                                                   |
+|--------------|---------------------------------------------------------------------|
+| fingerprint  | uuid                                                                |
+| name         | `Healthcheck / Check: {payload.alert.name} / Tenant: {tenant_name}` |
+| status       | status                                                              |
+| startedAt    | `last_ping` (if status is down)                                     |
+| endedAt      | `last_ping` (if status is up)                                       |
+| tags         | tags                                                                |
+| description  | desc                                                                |
+| support_team | tag: `support_team`                                                 |
