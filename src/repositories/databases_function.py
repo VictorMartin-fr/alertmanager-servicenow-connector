@@ -1,5 +1,5 @@
+from src.schemas.core import CoreAlert
 from src.core.database import db_instance
-from src.schemas.alertmanager import Alert
 from src.core.config import settings
 
 class AlertDatabase:
@@ -14,30 +14,30 @@ class AlertDatabase:
         """
         return await self.collection.find_one({"fingerprint": fingerprint})
 
-    async def create_new_alert(self, alert: Alert, servicenow_ticket_number: str, servicenow_sys_id: str):
+    async def create_new_alert(self, core_alert: CoreAlert, ticket_id: str, internal_id: str):
         """
         Create new alert inside MongoDB
         """
         document = {
-        "alertName": alert.labels['alertname'],
-        "incidentNumber": servicenow_ticket_number,
-        "snowSysId": servicenow_sys_id,
-        "alertStatus": alert.status,
-        "alertStartDate": alert.startsAt,
-        "alertEndDate": alert.endsAt,
-        "fingerprint": alert.fingerprint
+            "alertName": core_alert.name,
+            "ticket_id": ticket_id,
+            "internal_id": internal_id,
+            "alertStatus": core_alert.status,
+            "alertStartDate": core_alert.startedAt,
+            "alertEndDate": core_alert.endedAt,
+            "fingerprint": core_alert.fingerprint
         }
         await self.collection.insert_one(document)
 
-    async def update_alert(self, alert: Alert):
+    async def update_alert(self, core_alert: CoreAlert):
         """
         Update alert status in MongoDB
         """
-        filter_query = {"fingerprint": alert.fingerprint}
+        filter_query = {"fingerprint": core_alert.fingerprint}
         document_update = {
             "$set": {
-                "alertStatus": alert.status,
-                "alertEndDate": alert.endsAt
+                "alertStatus": core_alert.status,
+                "alertEndDate": core_alert.endedAt
             }
         }
         await self.collection.update_one(filter_query,document_update)

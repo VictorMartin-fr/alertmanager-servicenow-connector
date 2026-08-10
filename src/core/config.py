@@ -1,7 +1,9 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict, PydanticBaseSettingsSource, YamlConfigSettingsSource
+
+import logging
 
 class ServiceNowStateConfig(BaseModel):
     in_progress: Optional[int]
@@ -9,6 +11,8 @@ class ServiceNowStateConfig(BaseModel):
     hold_reason: Optional[int]
 
 class ServiceNowConfig(BaseModel):
+    enabled: Optional[bool] = Field(default=False)
+    module: Optional[str] = Field(default="incident")
     instance_id: Optional[str]
     username: Optional[str]
     password: Optional[str]
@@ -23,9 +27,22 @@ class MongoDbConfig(BaseModel):
     database: Optional[str]
     collection: Optional[str]
 
+class NotifierZulipConfig(BaseModel):
+    enabled: Optional[bool] = Field(default=False)
+    instance_url: Optional[str]
+    email: Optional[str]
+    api_key: Optional[str]
+    channel: Optional[str]
+
+class NotifierSlackConfig(BaseModel):
+    enabled: Optional[bool] = Field(default=False)
+    webhook_url: Optional[str]
+
 class Settings(BaseSettings):
     service_now: ServiceNowConfig
     mongodb: MongoDbConfig
+    zulip: NotifierZulipConfig
+    slack: NotifierSlackConfig
 
     model_config = SettingsConfigDict(
         env_prefix="ASC_",
@@ -48,5 +65,3 @@ class Settings(BaseSettings):
         )
 
 settings = Settings()
-
-print(settings)

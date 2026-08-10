@@ -1,5 +1,7 @@
 #ServiceNow configuration
 service_now:
+  enabled:
+  module:
   instance_id:
   username:
   password:
@@ -17,3 +19,16 @@ mongodb:
   password:
   database:
   collection:
+
+#Slack configuration
+slack:
+  enabled:
+  webhook_url:
+
+#Zulip configuration
+zulip:
+  enabled:
+  instance_url:
+  email:
+  api_key:
+  channel:
