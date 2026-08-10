@@ -27,7 +27,7 @@ slack:
 
 #Zulip configuration
 zulip:
-  activate:
+  enabled:
   instance_url:
   email:
   api_key:
