@@ -1,3 +1,9 @@
+#General configuration
+general:
+  scheduled_task:
+    scheduler_interval:
+    keep_alert_interval:
+
 #ServiceNow configuration
 service_now:
   enabled:

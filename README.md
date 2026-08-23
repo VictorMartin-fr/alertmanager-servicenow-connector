@@ -35,6 +35,21 @@ ASC use a configuration files and/or environment variables. Create a file `confi
 
 Documentation of each component are available inside `./docs/` folder.
 
+#### Background jobs
+
+In order to clean the alert database if an alarm has not been triggered for some time, a background job is available, run `every hours` and remove alerts in resolved state for more than `24 hours`.
+
+You can customize these parameters by change this configuration fields :
+```yaml
+general:
+  scheduled_task:
+    scheduler_interval:
+    keep_alert_interval:
+```
+
+- `scheduler_interval`: delay between to clean up job in hours (by default, `1`)
+- `keep_alert_interval`: delay before removing the alert in hours (by default, `24`)
+
 ### Docker
 
 For testing purpose, we have a `docker-compose.yml` file available inside the repository. To start it, copy the file `.env.template` to `.env`, fill the value `SERVICENOW_PASSWORD` with your service account password and configure the secrets for MongoDB (`MONGODB_USERNAME` and `MONGODB_PASSWORD`)

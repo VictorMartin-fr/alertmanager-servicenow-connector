@@ -5,6 +5,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict, PydanticBaseSett
 
 import logging
 
+class SchedulerConfig(BaseModel):
+    scheduler_interval: Optional[int] = Field(default=1)
+    keep_alert_interval: Optional[int] = Field(default=24)
+
+class GeneralConfig(BaseModel):
+    scheduled_task: SchedulerConfig
+
 class ServiceNowStateConfig(BaseModel):
     in_progress: Optional[int]
     on_hold: Optional[int]
@@ -39,6 +46,7 @@ class NotifierSlackConfig(BaseModel):
     webhook_url: Optional[str]
 
 class Settings(BaseSettings):
+    general: GeneralConfig
     service_now: ServiceNowConfig
     mongodb: MongoDbConfig
     zulip: NotifierZulipConfig
