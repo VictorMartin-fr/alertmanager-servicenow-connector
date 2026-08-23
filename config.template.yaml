@@ -17,6 +17,15 @@ service_now:
     on_hold:
     hold_reason:
 
+#Jira configuration
+jira:
+  enabled:
+  module:
+  cloud_id:
+  email:
+  api_key:
+  genie_key:
+
 #MongoDB configuration
 mongodb:
   hostname:

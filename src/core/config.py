@@ -45,12 +45,21 @@ class NotifierSlackConfig(BaseModel):
     enabled: Optional[bool] = Field(default=False)
     webhook_url: Optional[str]
 
+class JiraConfig(BaseModel):
+    enabled: Optional[bool] = Field(default=False)
+    module: Optional[str] = Field(default="incident")
+    cloud_id: Optional[str]
+    email: Optional[str]
+    api_key: Optional[str]
+    genie_key: Optional[str]
+
 class Settings(BaseSettings):
     general: GeneralConfig
     service_now: ServiceNowConfig
     mongodb: MongoDbConfig
     zulip: NotifierZulipConfig
     slack: NotifierSlackConfig
+    jira: JiraConfig
 
     model_config = SettingsConfigDict(
         env_prefix="ASC_",
