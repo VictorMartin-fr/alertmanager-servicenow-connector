@@ -2,13 +2,11 @@ from src.schemas.core import CoreAlert
 from src.schemas.healthcheck import HealthCheck, HealthcheckPayload
 from src.services.notification_manager import notify
 from src.services.incident_manager import ticketing
-from src.repositories.databases_function import AlertDatabase
+from src.repositories.databases_function import alert_repo
 from src.schemas.alertmanager import AlertManager
 import logging
 
 logger = logging.getLogger("alerts_orchestrator")
-
-alert_repo = AlertDatabase()
 
 """
 AlertManager/Grafana alert orchestrator

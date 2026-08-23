@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from src.core.database import connect_to_mongo,close_mongo_connection
 from src.core.config import settings
@@ -7,6 +8,7 @@ from src.clients.slack_client import SlackClient
 from src.clients.servicenow_client import ServiceNowClient
 from src.services.notification_manager import notify
 from src.services.incident_manager import ticketing
+from src.services.background_jobs import clean_resolved_alerts
 from src.api import webhook
 
 import logging
@@ -16,10 +18,17 @@ import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger('main')
 
+#Scheduler initialization
+scheduler = AsyncIOScheduler()
+
 async def lifespan(app: FastAPI):
     print("ASC API starting...")
     #Database connection initialization
     await connect_to_mongo()
+
+    #Scheduler setup
+    scheduler.start()
+    scheduler.add_job(clean_resolved_alerts, 'interval', minutes=10)
 
     #Ticketing connector initialization
     ##ServiceNow : Incident
@@ -58,6 +67,7 @@ async def lifespan(app: FastAPI):
     yield
 
     print("ASC API ending...")
+    scheduler.shutdown()
     close_mongo_connection()
 
 app = FastAPI(

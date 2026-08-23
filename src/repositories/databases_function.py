@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from src.schemas.core import CoreAlert
 from src.core.database import db_instance
 from src.core.config import settings
@@ -41,3 +43,20 @@ class AlertDatabase:
             }
         }
         await self.collection.update_one(filter_query,document_update)
+
+    async def delete_alert(self, limit_date: datetime):
+        """
+        Delete alert inside MongoDB
+        """
+        filter_query = {
+            "alertStatus": "resolved",
+            "alertEndDate": {"$lte": limit_date.isoformat()}
+        }
+
+        query = await self.collection.delete_many(filter_query)
+        return {
+            "row_count": query.deleted_count,
+            "message": "alert deleted"
+        }
+
+alert_repo = AlertDatabase()
