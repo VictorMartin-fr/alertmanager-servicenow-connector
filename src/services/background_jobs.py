@@ -10,6 +10,7 @@ async def clean_resolved_alerts():
     """
     logger.info("[SCHEDULER] beginning deleting resolved alerts")
     limit_date = datetime.datetime.now() - datetime.timedelta(hours=24)
+    print(limit_date)
     try:
         result = await alert_repo.delete_alert(limit_date)
         logger.info(f"[SCHEDULER] {result["row_count"]} alerts deleted")

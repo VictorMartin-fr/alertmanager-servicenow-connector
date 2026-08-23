@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
 
     #Scheduler setup
     scheduler.start()
-    scheduler.add_job(clean_resolved_alerts, 'interval', minutes=10)
+    scheduler.add_job(clean_resolved_alerts, 'interval', minutes=2)
 
     #Ticketing connector initialization
     ##ServiceNow : Incident

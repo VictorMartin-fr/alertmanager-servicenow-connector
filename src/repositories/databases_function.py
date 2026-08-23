@@ -50,7 +50,7 @@ class AlertDatabase:
         """
         filter_query = {
             "alertStatus": "resolved",
-            "alertEndDate": {"$lte": limit_date.isoformat()}
+            "alertEndDate": {"$lte": limit_date}
         }
 
         query = await self.collection.delete_many(filter_query)
