@@ -6,7 +6,7 @@ from src.core.config import settings
 from src.clients.zulip_client import ZulipClient
 from src.clients.slack_client import SlackClient
 from src.clients.servicenow_client import ServiceNowClient
-from src.clients.jira_client import JiraAlertClient
+from src.clients.jira_client import JiraAlertClient, JiraIncidentClient
 from src.services.notification_manager import notify
 from src.services.incident_manager import ticketing
 from src.services.background_jobs import clean_resolved_alerts
@@ -50,9 +50,19 @@ async def lifespan(app: FastAPI):
     if settings.jira.enabled and settings.jira.module == "alert":
         logger.info("[Module] enabling Jira as Alerts mode")
         jira_alert = JiraAlertClient(
-            genie_key=settings.jira.genie_key
+            genie_key=settings.jira.ops.genie_key
         )
         ticketing.register_provider(jira_alert)
+
+    ##Jira : Incidents
+    if settings.jira.enabled and settings.jira.module == "incident":
+        logger.info("[Module] enabling Jira as Incidents mode")
+        jira_incident = JiraIncidentClient(
+            domain=settings.jira.incident.domain,
+            email=settings.jira.incident.email,
+            api_key=settings.jira.incident.api_key
+        )
+        ticketing.register_provider(jira_incident)
 
     #Notification connector initialization
     ##Slack

@@ -21,10 +21,18 @@ service_now:
 jira:
   enabled:
   module:
-  cloud_id:
-  email:
-  api_key:
-  genie_key:
+  incident:
+    configuration:
+      domain:
+      service_desk_id:
+      state:
+        in_progress:
+        on_hold:
+    authentication:
+      email:
+      api_key:
+  ops:
+    genie_key:
 
 #MongoDB configuration
 mongodb:

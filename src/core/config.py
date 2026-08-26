@@ -45,13 +45,19 @@ class NotifierSlackConfig(BaseModel):
     enabled: Optional[bool] = Field(default=False)
     webhook_url: Optional[str]
 
+class JiraIncidentConfig(BaseModel):
+    domain: Optional[str]
+    email: Optional[str]
+    api_key: Optional[str]
+
+class JiraOpsConfig(BaseModel):
+    genie_key: Optional[str]
+
 class JiraConfig(BaseModel):
     enabled: Optional[bool] = Field(default=False)
     module: Optional[str] = Field(default="incident")
-    cloud_id: Optional[str]
-    email: Optional[str]
-    api_key: Optional[str]
-    genie_key: Optional[str]
+    incident: JiraIncidentConfig
+    ops: JiraOpsConfig
 
 class Settings(BaseSettings):
     general: GeneralConfig
